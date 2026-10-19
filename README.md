@@ -56,3 +56,8 @@ src/
 - 이벤트에 `FormEvent<HTMLFormElement>`, `KeyboardEvent<HTMLInputElement>` 타입을 붙임
 - `document.getElementById`가 `null`일 수 있는 경우를 처리함
 - CDN 대신 npm으로 React를 설치하고, Vite가 TS를 JS로 바꿔서 실행함
+
+
+
+https://github.com/user-attachments/assets/e4f260a0-6e13-401f-8b4b-5c053a388a86
+
