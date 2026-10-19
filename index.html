@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>할 일 목록</title>
+  <!-- 화면 그리기 전에 테마 먼저 적용함 (새로고침 시 밝은 화면이 잠깐 번쩍이는 것 방지) -->
+  <!-- 처음 값만 정하고, 이후 전환은 React(App.tsx)가 맡음 -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+    })();
+  </script>
+  <!-- CSS 파일이 불러와지기 전에도 배경색은 테마에 맞게 칠해둠 -->
+  <style>
+    html { background-color: #f4f4f7; }
+    html[data-theme="dark"] { background-color: #17171c; color-scheme: dark; }
+  </style>
+</head>
+<body>
+  <!-- React가 화면을 그려 넣을 자리 -->
+  <div id="root"></div>
+
+  <!-- 앱 시작점. Vite가 TS를 JS로 바꿔서 실행함 -->
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

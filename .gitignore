@@ -1,0 +1,10 @@
+# npm install로 받은 패키지 (용량 크고 다시 받을 수 있음)
+node_modules
+
+# npm run build 결과물
+dist
+
+# 기타
+*.local
+*.log
+.DS_Store
