@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { KeyboardEvent } from "react";
+import { PRIORITY_LABELS } from "../types";
 import type { Todo } from "../types";
 
 // 이 컴포넌트가 받는 props의 타입 정의함
@@ -69,8 +70,12 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
           <button className="small-button" onClick={cancelEdit}>취소</button>
         </>
       ) : (
-        // 보기 모드: 내용 + 수정/삭제 버튼. 내용을 더블클릭해도 수정 모드로 바뀜
+        // 보기 모드: 우선순위 + 내용 + 수정/삭제 버튼. 내용을 더블클릭해도 수정 모드로 바뀜
         <>
+          {/* 우선순위별로 클래스 달라짐 (priority-high 등) → CSS에서 색 다르게 줌 */}
+          <span className={`priority-badge priority-${todo.priority}`}>
+            {PRIORITY_LABELS[todo.priority]}
+          </span>
           <span className="todo-text" onDoubleClick={startEdit}>
             {todo.text}
           </span>

@@ -15,6 +15,13 @@
   --hover: #f4f4f7; /* 버튼 마우스 올렸을 때 */
   --accent: #4a6cf7; /* 입력창 포커스 */
   --danger: #d33; /* 삭제 버튼 */
+  /* 우선순위 표시 (배경 / 글자) */
+  --high-bg: #fde8e8;
+  --high-text: #c62828;
+  --medium-bg: #fff3d6;
+  --medium-text: #8a5a00;
+  --low-bg: #e8effd;
+  --low-text: #2f5bb7;
   color-scheme: light; /* 체크박스, 스크롤바 등 기본 요소도 밝게 */
 }
 
@@ -31,6 +38,12 @@
   --hover: #2c2c34;
   --accent: #6b8cff;
   --danger: #ff6b6b;
+  --high-bg: #4a2023;
+  --high-text: #ff9a9a;
+  --medium-bg: #45381a;
+  --medium-text: #f2c46b;
+  --low-bg: #1f2e4b;
+  --low-text: #9db8ff;
   color-scheme: dark; /* 체크박스, 스크롤바 등 기본 요소도 어둡게 */
 }
 
@@ -86,9 +99,11 @@ h1 {
   margin-bottom: 16px;
 }
 
-/* 추가 입력창, 수정 입력창 공통 */
+/* 추가 입력창, 수정 입력창, 우선순위 선택, 검색창 공통 */
 .todo-form input,
-.edit-input {
+.edit-input,
+.priority-select,
+.search-input {
   flex: 1; /* 남는 공간 전부 차지함 */
   min-width: 0;
   height: 40px;
@@ -102,8 +117,31 @@ h1 {
 }
 
 .todo-form input:focus,
-.edit-input:focus {
+.edit-input:focus,
+.priority-select:focus,
+.search-input:focus {
   border-color: var(--accent);
+}
+
+/* 우선순위 선택은 글자 크기만큼만 차지함 */
+.priority-select {
+  flex: 0 0 auto;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+/* ===== 검색창 + 필터 탭 ===== */
+.toolbar {
+  display: flex;
+  flex-direction: column; /* 위아래로 쌓음 */
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.search-input {
+  flex: none;
+  height: 36px;
+  font-size: 14px;
 }
 
 /* 수정 입력창은 목록 줄 높이에 맞춰 조금 낮게 */
@@ -172,17 +210,58 @@ button:hover {
   color: var(--danger);
 }
 
-/* ===== 하단 문구 ===== */
+/* 필터 탭: 고른 탭(active)만 강조색으로 표시함 */
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-tab.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* 우선순위 표시: 둥근 꼬리표 모양. 우선순위마다 색만 다름 */
+.priority-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 999px;
+}
+
+.priority-high {
+  color: var(--high-text);
+  background-color: var(--high-bg);
+}
+
+.priority-medium {
+  color: var(--medium-text);
+  background-color: var(--medium-bg);
+}
+
+.priority-low {
+  color: var(--low-text);
+  background-color: var(--low-bg);
+}
+
+/* ===== 하단 ===== */
 .empty-message {
-  margin: 8px 0;
+  margin: 16px 0 8px;
   text-align: center;
   color: var(--text-muted);
   font-size: 14px;
 }
 
+/* 완료 항목 삭제 버튼(왼쪽) + 남은 개수(오른쪽) */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
 .todo-count {
-  margin: 12px 0 0;
-  text-align: right;
+  margin: 0;
   color: var(--text-muted);
   font-size: 13px;
 }

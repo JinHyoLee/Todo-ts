@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import type { Todo, Theme } from "./types";
+import type { Todo, Theme, Filter, Priority } from "./types";
 import TodoForm from "./components/TodoForm";
 import TodoItem from "./components/TodoItem";
 import ThemeToggle from "./components/ThemeToggle";
+import FilterTabs from "./components/FilterTabs";
+import SearchBar from "./components/SearchBar";
 
 // localStorage에 저장할 때 쓰는 이름
 const STORAGE_KEY = "todos";
@@ -17,6 +19,10 @@ function loadTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+// 우선순위 기능 넣기 전에 저장된 할 일은 priority가 없음
+// 그래서 priority를 "있을 수도 없을 수도 있는(?)" 값으로 보고 읽어옴
+type SavedTodo = Omit<Todo, "priority"> & { priority?: Priority };
+
 // 저장된 목록 불러옴. 없거나 깨져 있으면 빈 배열
 function loadTodos(): Todo[] {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -24,7 +30,9 @@ function loadTodos(): Todo[] {
     return [];
   }
   try {
-    return JSON.parse(saved) as Todo[];
+    const parsed = JSON.parse(saved) as SavedTodo[];
+    // priority 없는 예전 할 일은 "보통"으로 채움
+    return parsed.map((todo) => ({ ...todo, priority: todo.priority ?? "medium" }));
   } catch {
     return [];
   }
@@ -35,6 +43,10 @@ function loadTodos(): Todo[] {
 function App() {
   // 할 일 목록. <Todo[]>로 "Todo 배열"이라고 타입 지정함
   const [todos, setTodos] = useState<Todo[]>(loadTodos);
+
+  // 지금 고른 필터, 검색어 (저장 안 함. 새로고침하면 처음 상태로 돌아감)
+  const [filter, setFilter] = useState<Filter>("all");
+  const [query, setQuery] = useState("");
 
   // todos가 바뀔 때마다 localStorage에 자동 저장함
   useEffect(() => {
@@ -57,8 +69,8 @@ function App() {
   }
 
   // 추가
-  function addTodo(text: string) {
-    const newTodo: Todo = { id: Date.now(), text, done: false };
+  function addTodo(text: string, priority: Priority) {
+    const newTodo: Todo = { id: Date.now(), text, done: false, priority };
     setTodos([...todos, newTodo]);
   }
 
@@ -77,8 +89,33 @@ function App() {
     setTodos(todos.map((todo) => (todo.id === id ? { ...todo, text: newText } : todo)));
   }
 
-  // 남은(완료 안 한) 할 일 개수. todos가 바뀌면 자동으로 다시 계산됨
+  // 완료한 할 일 한 번에 삭제 (완료 안 한 것만 남김)
+  function clearDone() {
+    setTodos(todos.filter((todo) => !todo.done));
+  }
+
+  // 화면에 보여줄 목록: 필터 → 검색 순서로 걸러냄
+  // 저장된 todos는 그대로 두고, 보여줄 것만 따로 계산함
+  const keyword = query.trim().toLowerCase();
+  const visibleTodos = todos
+    .filter((todo) => {
+      if (filter === "active") return !todo.done;
+      if (filter === "done") return todo.done;
+      return true; // "all"
+    })
+    .filter((todo) => todo.text.toLowerCase().includes(keyword)); // 대소문자 구분 안 함
+
+  // 남은(완료 안 한) 할 일 개수, 완료한 할 일 개수. todos가 바뀌면 자동으로 다시 계산됨
   const remaining = todos.filter((todo) => !todo.done).length;
+  const doneCount = todos.length - remaining;
+
+  // 목록이 비었을 때 보여줄 문구
+  let emptyMessage = "";
+  if (todos.length === 0) {
+    emptyMessage = "할 일을 추가해보세요.";
+  } else if (visibleTodos.length === 0) {
+    emptyMessage = keyword ? "검색 결과가 없어요." : "해당하는 할 일이 없어요.";
+  }
 
   return (
     <main className="container">
@@ -89,9 +126,17 @@ function App() {
 
       <TodoForm onAdd={addTodo} />
 
-      {/* 배열을 map으로 돌려서 TodoItem 목록 만듦. key로 항목 구분함 */}
+      {/* 할 일이 하나라도 있을 때만 검색창, 필터 보여줌 */}
+      {todos.length > 0 && (
+        <div className="toolbar">
+          <SearchBar query={query} onChange={setQuery} />
+          <FilterTabs filter={filter} onChange={setFilter} />
+        </div>
+      )}
+
+      {/* 걸러낸 목록(visibleTodos)을 map으로 돌려서 TodoItem 목록 만듦. key로 항목 구분함 */}
       <ul className="todo-list">
-        {todos.map((todo) => (
+        {visibleTodos.map((todo) => (
           <TodoItem
             key={todo.id}
             todo={todo}
@@ -102,11 +147,20 @@ function App() {
         ))}
       </ul>
 
-      {/* 할 일이 없으면 안내 문구, 있으면 남은 개수 표시 */}
-      {todos.length === 0 ? (
-        <p className="empty-message">할 일을 추가해보세요.</p>
-      ) : (
-        <p className="todo-count">남은 할 일 {remaining}개</p>
+      {emptyMessage && <p className="empty-message">{emptyMessage}</p>}
+
+      {/* 하단: 완료 항목 삭제 버튼(완료한 게 있을 때만) + 남은 개수 */}
+      {todos.length > 0 && (
+        <div className="footer">
+          {doneCount > 0 ? (
+            <button className="small-button" onClick={clearDone}>
+              완료 항목 삭제 ({doneCount})
+            </button>
+          ) : (
+            <span />
+          )}
+          <p className="todo-count">남은 할 일 {remaining}개</p>
+        </div>
       )}
     </main>
   );
